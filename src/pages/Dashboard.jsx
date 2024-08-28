@@ -117,18 +117,25 @@ function Dashboard() {
     name: "",
     amount: "",
   })
+
+  const [categories, setCategories] = useState(["Groceries", "Utilities", "Transportation", "Entertainment", "Other"])
+  
   const handleInputChange = (e) => {
     setNewExpense({
       ...newExpense,
       [e.target.name]: e.target.value,
     })
   }
+
+
   const handleBudgetInputChange = (e) => {
     setNewBudget({
       ...newBudget,
       [e.target.name]: e.target.value,
     })
   }
+
+
   const handleAddExpense = () => {
     if (newExpense.amount && newExpense.category && newExpense.description) {
       setExpenses([
@@ -148,20 +155,26 @@ function Dashboard() {
       })
     }
   }
+
+
   const handleAddBudget = () => {
     if (newBudget.name && newBudget.amount) {
-      console.log("New budget:", newBudget)
+      setCategories([...categories, newBudget.name])
       setNewBudget({
         name: "",
         amount: "",
       })
     }
   }
+
+
   const handleDeleteExpense = (id) => {
     setExpenses(expenses.filter((expense) => expense.id !== id))
   }
   const [sortBy, setSortBy] = useState("date")
+
   const [filterCategory, setFilterCategory] = useState("")
+
   const sortedExpenses = useMemo(() => {
     let sorted = [...expenses]
     if (sortBy === "amount") {
@@ -176,9 +189,10 @@ function Dashboard() {
     }
     return sorted
   }, [expenses, sortBy, filterCategory])
+
   const totalExpenses = useMemo(() => expenses.reduce((total, expense) => total + expense.amount, 0), [expenses])
-  const expensesByCategory = useMemo(
-    () =>
+
+  const expensesByCategory = useMemo(() =>
       expenses.reduce((acc, expense) => {
         if (!acc[expense.category]) {
           acc[expense.category] = { total: 0, count: 0 }
@@ -207,23 +221,23 @@ function Dashboard() {
                   id="amount"
                   name="amount"
                   type="number"
-                  step="0.01"
+                  step="1"
                   value={newExpense.amount}
                   onChange={handleInputChange}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category"> Budget Category</Label>
                 <Select id="category" name="category" value={newExpense.category} onValueChange={handleInputChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Groceries">Groceries</SelectItem>
-                    <SelectItem value="Utilities">Utilities</SelectItem>
-                    <SelectItem value="Transportation">Transportation</SelectItem>
-                    <SelectItem value="Entertainment">Entertainment</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -239,6 +253,31 @@ function Dashboard() {
             </CardContent>
             <CardFooter>
               <Button onClick={handleAddExpense}>Add Expense</Button>
+            </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Create Budget</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="budget-name">Budget Name</Label>
+                <Input id="budget-name" name="name" value={newBudget.name} onChange={handleBudgetInputChange} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="budget-amount">Budget Amount</Label>
+                <Input
+                  id="budget-amount"
+                  name="amount"
+                  type="number"
+                  step="5"
+                  value={newBudget.amount}
+                  onChange={handleBudgetInputChange}
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleAddBudget}>Create Budget</Button>
             </CardFooter>
           </Card>
           <Card>
@@ -268,31 +307,6 @@ function Dashboard() {
                 ))}
               </div>
             </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Create Budget</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="budget-name">Budget Name</Label>
-                <Input id="budget-name" name="name" value={newBudget.name} onChange={handleBudgetInputChange} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="budget-amount">Budget Amount</Label>
-                <Input
-                  id="budget-amount"
-                  name="amount"
-                  type="number"
-                  step="0.01"
-                  value={newBudget.amount}
-                  onChange={handleBudgetInputChange}
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button onClick={handleAddBudget}>Create Budget</Button>
-            </CardFooter>
           </Card>
         </div>
         <div className="mt-8">
@@ -325,11 +339,11 @@ function Dashboard() {
                   <DropdownMenuRadioGroup value={filterCategory} onValueChange={setFilterCategory}>
                     <DropdownMenuRadioItem value="">All Categories</DropdownMenuRadioItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuRadioItem value="Groceries">Groceries</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Utilities">Utilities</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Transportation">Transportation</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Entertainment">Entertainment</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Other">Other</DropdownMenuRadioItem>
+                    {categories.map((category) => (
+                      <DropdownMenuRadioItem key={category} value={category}>
+                        {category}
+                        </DropdownMenuRadioItem>
+                      ))}
                   </DropdownMenuRadioGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
