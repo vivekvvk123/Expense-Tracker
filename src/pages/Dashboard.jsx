@@ -1,45 +1,14 @@
 import React from 'react'
 import { useState, useMemo } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import {Card,CardContent,CardDescription,CardFooter,CardHeader,CardTitle} from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-} from "@/components/ui/dropdown-menu"
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-
+import {DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuLabel,DropdownMenuSeparator,DropdownMenuTrigger,DropdownMenuRadioGroup,DropdownMenuRadioItem} from "@/components/ui/dropdown-menu"
+import {Table,TableBody,TableCaption,TableCell,TableHead,TableHeader,TableRow} from "@/components/ui/table"
 
 
 function FilterIcon(props) {
@@ -107,48 +76,22 @@ function ListOrderedIcon(props) {
 }
 
 function Dashboard() {
-  const [expenses, setExpenses] = useState([
-    {
-      id: 1,
-      amount: 50,
-      category: "Groceries",
-      description: "Weekly grocery shopping",
-      date: "2023-05-01",
-    },
-    {
-      id: 2,
-      amount: 25,
-      category: "Utilities",
-      description: "Electricity bill",
-      date: "2023-05-15",
-    },
-    {
-      id: 3,
-      amount: 120,
-      category: "Groceries",
-      description: "Weekly grocery shopping",
-      date: "2023-05-01",
-    },
 
-    {
-      id: 4,
-      amount: 260,
-      category: "ABc",
-      description: "Electricity bill",
-      date: "2023-05-15",
-    },
-    
+  const [expenses, setExpenses] = useState([  // For adding in table
+])
 
-  ])
-  const [newExpense, setNewExpense] = useState({
+  const [newExpense, setNewExpense] = useState({  
     amount: "",
     category: "",
     description: "",
   })
-  const [newBudget, setNewBudget] = useState({
+  const [budget, setBudget] = useState({
     name: "",
     amount: "",
   })
+
+  const [totalbudget, setTotalBudget] = useState(0);
+
 
   const [categories, setCategories] = useState(["Groceries", "Transportation", "Entertainment"])
   
@@ -161,12 +104,14 @@ function Dashboard() {
 
 
   const handleBudgetInputChange = (e) => {
-    setNewBudget({
-      ...newBudget,
+    setBudget({
+      ...budget,
       [e.target.name]: e.target.value,
     })
   }
 
+
+  const [categoryExpenses, setCategoryExpenses] = useState(0);
 
   const handleAddExpense = () => {
     if (newExpense.amount && newExpense.category && newExpense.description) {
@@ -180,6 +125,9 @@ function Dashboard() {
           date: new Date().toISOString().slice(0, 10),
         },
       ])
+
+
+      
       setNewExpense({
         amount: "",
         category: "",
@@ -190,9 +138,10 @@ function Dashboard() {
 
 
   const handleAddBudget = () => {
-    if (newBudget.name && newBudget.amount) {
-      setCategories([...categories, newBudget.name])
-      setNewBudget({
+    if (budget.name && budget.amount) {
+      setTotalBudget(totalbudget + parseFloat(budget.amount))
+      setCategories([...categories, budget.name])
+      setBudget({
         name: "",
         amount: "",
       })
@@ -203,6 +152,7 @@ function Dashboard() {
   const handleDeleteExpense = (id) => {
     setExpenses(expenses.filter((expense) => expense.id !== id))
   }
+  
   const [sortBy, setSortBy] = useState("date")
 
   const [filterCategory, setFilterCategory] = useState("")
@@ -221,6 +171,7 @@ function Dashboard() {
     }
     return sorted
   }, [expenses, sortBy, filterCategory])
+  
 
   const totalExpenses = useMemo(() => expenses.reduce((total, expense) => total + expense.amount, 0), [expenses])
 
@@ -236,14 +187,8 @@ function Dashboard() {
     [expenses],
   )
 
-  const categoryBudgets = useMemo(() =>
-    categories.map((category) => {
-      const spent = expensesByCategory[category.name]?.total || 0
-      const percentage = (spent / category.amount) * 100
-      return { ...category, spent, percentage }
-    }),
-    [categories, expensesByCategory]
-  )
+  console.log(expenses)
+  console.log(totalExpenses)
 
   return (
     <div className="flex flex-col min-h-screen background-container">
@@ -307,7 +252,7 @@ function Dashboard() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="budget-name">Budget Name</Label>
-                <Input id="budget-name" name="name" value={newBudget.name} onChange={handleBudgetInputChange} />
+                <Input id="budget-name" name="name" value={budget.name} onChange={handleBudgetInputChange} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="budget-amount">Budget Amount</Label>
@@ -316,7 +261,7 @@ function Dashboard() {
                   name="amount"
                   type="number"
                   step="5"
-                  value={newBudget.amount}
+                  value={budget.amount}
                   onChange={handleBudgetInputChange}
                 />
               </div>
@@ -335,27 +280,35 @@ function Dashboard() {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-2xl font-bold">₹{totalExpenses.toFixed(2)}</div>
-                  <div className="text-muted-foreground">Total Expenses</div>
+                  <div className="text-2xl font-bold">₹{totalbudget.toFixed(2)-totalExpenses}</div>
+                  <div className="text-muted-foreground">Total Budget Left</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{expenses.length}</div>
                   <div className="text-muted-foreground">Total Transactions</div>
                 </div>
               </div>
+
+              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-3">
+                  <div className="bg-blue-600 h-2.5 rounded-full" style={{width:`${(totalbudget-totalExpenses)/totalbudget*100}%`}}></div>
+              </div>
+
+
               <Separator className="my-6" />
               <div className="grid grid-cols-1 gap-4">
-                {Object.entries(expensesByCategory).map(([category, { total, count }]) => (
-                  <div key={category}>
+                
+              {Object.entries(expensesByCategory).map(([category, { total, count }]) => (
+                  <div key={category} className='border border-gray-300 rounded-lg p-2'>
+                    <div className="text-xl font-bold">${total.toFixed(2)}</div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                       <div className="bg-blue-600 h-2.5 rounded-full" style={{width:`${(count/total)*100}%`}}></div>
                     </div>
-                    <div className="text-xl font-bold">₹{total.toFixed(2)}</div>
                     <div className="text-muted-foreground">
                       {category} ({count})
                     </div>
                   </div>
                 ))}
+
               </div>
             </CardContent>
           </Card>
