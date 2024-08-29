@@ -89,9 +89,9 @@ function Dashboard() {
     name: "",
     amount: "",
   })
+  const [categoryBudget, setCategoryBudget] = useState({})
 
   const [totalbudget, setTotalBudget] = useState(0);
-
 
   const [categories, setCategories] = useState(["Groceries", "Transportation", "Entertainment"])
   
@@ -110,9 +110,6 @@ function Dashboard() {
     })
   }
 
-
-  const [categoryExpenses, setCategoryExpenses] = useState(0);
-
   const handleAddExpense = () => {
     if (newExpense.amount && newExpense.category && newExpense.description) {
       setExpenses([
@@ -125,8 +122,6 @@ function Dashboard() {
           date: new Date().toISOString().slice(0, 10),
         },
       ])
-
-
       
       setNewExpense({
         amount: "",
@@ -140,6 +135,10 @@ function Dashboard() {
   const handleAddBudget = () => {
     if (budget.name && budget.amount) {
       setTotalBudget(totalbudget + parseFloat(budget.amount))
+      setCategoryBudget({
+        ...categoryBudget,
+        [budget.name]: parseFloat(budget.amount),
+      })
       setCategories([...categories, budget.name])
       setBudget({
         name: "",
@@ -299,9 +298,10 @@ function Dashboard() {
                 
               {Object.entries(expensesByCategory).map(([category, { total, count }]) => (
                   <div key={category} className='border border-gray-300 rounded-lg p-2'>
-                    <div className="text-xl font-bold">${total.toFixed(2)}</div>
+                    <div className="text-xl font-bold">₹{total.toFixed(2)} / ₹{categoryBudget[category].toFixed(2)}</div>
+                    {console.log(category)}
                     <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                      <div className="bg-blue-600 h-2.5 rounded-full" style={{width:`${(count/total)*100}%`}}></div>
+                      <div className="bg-blue-600 h-2.5 rounded-full" style={{width:`${total/(categoryBudget[category])*100}%`}}></div>
                     </div>
                     <div className="text-muted-foreground">
                       {category} ({count})
