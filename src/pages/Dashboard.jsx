@@ -107,7 +107,39 @@ function ListOrderedIcon(props) {
 }
 
 function Dashboard() {
-  const [expenses, setExpenses] = useState([ ])
+  const [expenses, setExpenses] = useState([
+    {
+      id: 1,
+      amount: 50,
+      category: "Groceries",
+      description: "Weekly grocery shopping",
+      date: "2023-05-01",
+    },
+    {
+      id: 2,
+      amount: 25,
+      category: "Utilities",
+      description: "Electricity bill",
+      date: "2023-05-15",
+    },
+    {
+      id: 3,
+      amount: 120,
+      category: "Groceries",
+      description: "Weekly grocery shopping",
+      date: "2023-05-01",
+    },
+
+    {
+      id: 4,
+      amount: 260,
+      category: "ABc",
+      description: "Electricity bill",
+      date: "2023-05-15",
+    },
+    
+
+  ])
   const [newExpense, setNewExpense] = useState({
     amount: "",
     category: "",
@@ -118,7 +150,7 @@ function Dashboard() {
     amount: "",
   })
 
-  const [categories, setCategories] = useState(["Groceries", "Utilities", "Transportation", "Entertainment", "Other"])
+  const [categories, setCategories] = useState(["Groceries", "Transportation", "Entertainment"])
   
   const handleInputChange = (e) => {
     setNewExpense({
@@ -204,12 +236,22 @@ function Dashboard() {
     [expenses],
   )
 
+  const categoryBudgets = useMemo(() =>
+    categories.map((category) => {
+      const spent = expensesByCategory[category.name]?.total || 0
+      const percentage = (spent / category.amount) * 100
+      return { ...category, spent, percentage }
+    }),
+    [categories, expensesByCategory]
+  )
+
   return (
     <div className="flex flex-col min-h-screen background-container">
 
       
       <main className="flex-1 py-8 px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
           <Card>
             <CardHeader>
               <CardTitle>Add New Expense</CardTitle>
@@ -227,8 +269,8 @@ function Dashboard() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category"> Budget Category</Label>
-                <Select id="category" name="category" value={newExpense.category} onValueChange={handleInputChange}>
+                <Label htmlFor="category">Category</Label>
+                <Select id="category" name="category" value={newExpense.category} onValueChange={(value) => setNewExpense({ ...newExpense, category: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -255,6 +297,9 @@ function Dashboard() {
               <Button onClick={handleAddExpense}>Add Expense</Button>
             </CardFooter>
           </Card>
+
+
+
           <Card>
             <CardHeader>
               <CardTitle>Create Budget</CardTitle>
@@ -280,6 +325,9 @@ function Dashboard() {
               <Button onClick={handleAddBudget}>Create Budget</Button>
             </CardFooter>
           </Card>
+
+
+
           <Card>
             <CardHeader>
               <CardTitle>Expense Summary</CardTitle>
@@ -287,7 +335,7 @@ function Dashboard() {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-2xl font-bold">${totalExpenses.toFixed(2)}</div>
+                  <div className="text-2xl font-bold">₹{totalExpenses.toFixed(2)}</div>
                   <div className="text-muted-foreground">Total Expenses</div>
                 </div>
                 <div>
@@ -296,10 +344,13 @@ function Dashboard() {
                 </div>
               </div>
               <Separator className="my-6" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {Object.entries(expensesByCategory).map(([category, { total, count }]) => (
                   <div key={category}>
-                    <div className="text-xl font-bold">${total.toFixed(2)}</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                      <div className="bg-blue-600 h-2.5 rounded-full" style={{width:`${(count/total)*100}%`}}></div>
+                    </div>
+                    <div className="text-xl font-bold">₹{total.toFixed(2)}</div>
                     <div className="text-muted-foreground">
                       {category} ({count})
                     </div>
@@ -308,6 +359,9 @@ function Dashboard() {
               </div>
             </CardContent>
           </Card>
+
+
+
         </div>
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
@@ -365,7 +419,7 @@ function Dashboard() {
                   <TableCell>{expense.date}</TableCell>
                   <TableCell>{expense.category}</TableCell>
                   <TableCell>{expense.description}</TableCell>
-                  <TableCell className="text-right">${expense.amount.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">₹{expense.amount.toFixed(2)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleDeleteExpense(expense.id)}>
                       <TrashIcon className="w-4 h-4" />
