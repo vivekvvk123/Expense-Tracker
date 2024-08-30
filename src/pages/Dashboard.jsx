@@ -93,7 +93,7 @@ function Dashboard() {
 
   const [totalbudget, setTotalBudget] = useState(0);
 
-  const [categories, setCategories] = useState(["Groceries", "Transportation", "Entertainment"])
+  const [categories, setCategories] = useState([])
   
   const handleInputChange = (e) => {
     setNewExpense({
@@ -289,7 +289,8 @@ function Dashboard() {
               </div>
 
               <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-3">
-                  <div className="bg-blue-600 h-2.5 rounded-full" style={{width:`${(totalbudget-totalExpenses)/totalbudget*100}%`}}></div>
+                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${totalbudget > 0 ? ((totalbudget - totalExpenses) / totalbudget) * 100 : 0}%` }}
+                  ></div>
               </div>
 
 
