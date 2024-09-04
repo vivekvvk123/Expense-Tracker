@@ -1,5 +1,6 @@
 const { createExpense, getExpenses, deleteExpense } = require('../models/expenseModel');
 const { ObjectId } = require('mongodb');
+const { getDB } = require('../config/db');
 
 
 exports.getAllExpenses = async (req, res) => {
@@ -24,8 +25,11 @@ exports.createExpense = async (req, res) => {
 exports.deleteExpense = async (req, res) => {
   try {
     const { id } = req.params;
+    // console.log("hello")
     const collection = getDB().collection('expenses');
-    const result = await collection.deleteOne({ id: new ObjectId(id) });
+    // console.log(collection)
+    const result = await collection.deleteOne({ _id: new ObjectId(id) });
+    console.log(result)
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: "Expense not found" });

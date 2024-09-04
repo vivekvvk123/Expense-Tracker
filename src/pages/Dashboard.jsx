@@ -199,10 +199,12 @@ function Dashboard() {
 
 
 const handleDeleteExpense = async (id) => {
+    // console.log(id);
     try {
       const response = await fetch(`http://localhost:5000/api/expenses/${id}`, {
         method: 'DELETE',
       });
+      // console.log(response)
       if (!response.ok) throw new Error('Failed to delete expense');
 
       setExpenses(expenses.filter((expense) => expense._id !== id));
@@ -428,7 +430,8 @@ const handleDeleteExpense = async (id) => {
             </TableHeader>
             <TableBody>
               {sortedExpenses.map((expense) => (
-                <TableRow key={expense._id}>
+                <TableRow key={expense.id}>
+                  {/* {console.log(expense)} */}
                   <TableCell>{expense.date}</TableCell>
                   <TableCell>{expense.category}</TableCell>
                   <TableCell>{expense.description}</TableCell>
