@@ -1,5 +1,5 @@
-const { client } = require('../config/db');
-const db = client.db('Expense-Tracker');
-const budgets = db.collection('details');
+const { getDB } = require('../config/db');
 
-module.exports = budgets;
+const budgetsCollection = () => getDB().collection('budgets');
+
+module.exports = { budgetsCollection};

@@ -1,18 +1,26 @@
 const { MongoClient } = require('mongodb');
-require('dotenv').config();
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const uri = process.env.MONGO_URI;
-const client = new MongoClient(uri);
+const dbName = "Expense-Tracker";
+
+let db;
 
 const connectDB = async () => {
-    try {
-        await client.connect();
-        console.log('Connected to MongoDB');
-    } catch (err) {
-        console.error('MongoDB connection error:', err);
-        process.exit(1);
-    }
+  try {
+    const client = new MongoClient(uri);
+    await client.connect();
+    db = client.db(dbName);  // Use the specified database name
+    console.log(`MongoDB connected to database: ${dbName}`);
+  } catch (error) {
+    console.error('MongoDB connection failed', error);
+    process.exit(1);
+  }
 };
 
-module.exports = { client, connectDB };
+const getDB = () => db;
+
+module.exports = { connectDB, getDB };
 
