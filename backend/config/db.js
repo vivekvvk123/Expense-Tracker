@@ -12,7 +12,7 @@ const connectDB = async () => {
   try {
     const client = new MongoClient(uri);
     await client.connect();
-    db = client.db(dbName);  // Use the specified database name
+    db = client.db(dbName);
     console.log(`MongoDB connected to database: ${dbName}`);
   } catch (error) {
     console.error('MongoDB connection failed', error);

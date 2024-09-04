@@ -1,21 +1,29 @@
-const budgets = require('../models/budgetModel');
-
-exports.getBudgets = async (req, res) => {
-    try {
-        const allBudgets = await budgets.find({}).toArray();
-        res.json(allBudgets);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
+const {budgetsCollection} = require("../models/budgetModel");
+const createBudget = async (req, res) => {
+  try {
+    const { name, amount } = req.body;
+    console.log(`Creating budget with name: ${name}, amount: ${amount}`);
+    const newBudget = { name, amount: parseFloat(amount) };
+    const result = await budgetsCollection().insertOne(newBudget);
+    console.log("Insert result:", result);
+    res.status(201).json(newBudget);
+  } catch (error) {
+    console.error("Error creating budget:", error);
+    res.status(500).json({ message: "Failed to create budget", error });
+  }
 };
-    
-// Add a new budget
-exports.addBudget = async (req, res) => {
-    try {
-        const newBudget = req.body;
-        await budgets.insertOne(newBudget);
-        res.status(201).json(newBudget);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
+
+
+const getBudgets = async (req, res) => {
+  try {
+    const budgets = await budgetsCollection().find().toArray();
+    res.status(200).json(budgets);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to get budgets", error });
+  }
+};
+
+module.exports = {
+  createBudget,
+  getBudgets,
 };

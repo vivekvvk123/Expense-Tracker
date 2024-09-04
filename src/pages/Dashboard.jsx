@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, useMemo } from 'react'
+import { useState, useMemo ,useEffect} from 'react'
 import {Card,CardContent,CardDescription,CardFooter,CardHeader,CardTitle} from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -76,10 +76,8 @@ function ListOrderedIcon(props) {
 }
 
 function Dashboard() {
-
-  const [expenses, setExpenses] = useState([  // For adding in table
-])
-
+  
+  const [expenses, setExpenses] = useState([])
   const [newExpense, setNewExpense] = useState({  
     amount: "",
     category: "",
@@ -90,10 +88,10 @@ function Dashboard() {
     amount: "",
   })
   const [categoryBudget, setCategoryBudget] = useState({})
-
   const [totalbudget, setTotalBudget] = useState(0);
-
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState([]);
+  const [sortBy, setSortBy] = useState("date")
+  const [filterCategory, setFilterCategory] = useState("")
   
   const handleInputChange = (e) => {
     setNewExpense({
@@ -110,51 +108,110 @@ function Dashboard() {
     })
   }
 
-  const handleAddExpense = () => {
+  const handleAddExpense = async () => {
     if (newExpense.amount && newExpense.category && newExpense.description) {
-      setExpenses([
-        ...expenses,
-        {
-          id: expenses.length + 1,
-          amount: parseFloat(newExpense.amount),
-          category: newExpense.category,
-          description: newExpense.description,
-          date: new Date().toISOString().slice(0, 10),
-        },
-      ])
-      
-      setNewExpense({
-        amount: "",
-        category: "",
-        description: "",
-      })
+      try {
+        const response = await fetch('http://localhost:5000/api/expenses/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: parseFloat(newExpense.amount),
+            category: newExpense.category,
+            description: newExpense.description,
+            date:new Date().toISOString().slice(0,10)
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to add expense');
+        }
+        
+        const result = await response.json();
+        setExpenses([...expenses, result]);
+        setNewExpense({
+          amount: "",
+          category: "",
+          description: "",
+        });
+        fetchExpenses();
+      } catch (error) {
+        console.error('Error adding expense:', error);
+      }
+    } else {
+      console.error('Expense details are missing.');
     }
-  }
+  };
 
-
-  const handleAddBudget = () => {
-    if (budget.name && budget.amount) {
-      setTotalBudget(totalbudget + parseFloat(budget.amount))
-      setCategoryBudget({
-        ...categoryBudget,
-        [budget.name]: parseFloat(budget.amount),
-      })
-      setCategories([...categories, budget.name])
-      setBudget({
-        name: "",
-        amount: "",
-      })
+  const fetchBudgets = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/budgets');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setBudget(data);
+      setCategories(data.map((budget) => budget.name));
+    } catch (error) {
+      console.error('Error fetching budgets:', error);
+      setError('Failed to fetch budgets');
     }
-  }
+  };
 
-
-  const handleDeleteExpense = (id) => {
-    setExpenses(expenses.filter((expense) => expense.id !== id))
-  }
+  const fetchExpenses = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/expenses');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+      setExpenses(data.reverse());
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+      setError('Failed to fetch expenses');
+    }
+  };
   
-  const [sortBy, setSortBy] = useState("date")
 
-  const [filterCategory, setFilterCategory] = useState("")
+  const handleAddBudget = async () => {
+    if (budget.name && budget.amount) {
+      try {
+        const response = await fetch('http://localhost:5000/api/budget', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(budget),
+        });
+
+        if (!response.ok) throw new Error(`Failed to add budget. Status: ${response.status}`);
+
+        const newBudget = await response.json();
+        console.log('New budget added:', newBudget);
+
+        setBudget({ name: '', amount: '' });
+        setCategories([...categories, newBudget.name]);
+        await fetchBudgets();
+      } catch (error) {
+        console.error('Error adding budget:', error);
+      }
+    } else {
+      console.error('Budget name or amount is missing.');
+    }
+  };
+  
+
+
+
+const handleDeleteExpense = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/expenses/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) throw new Error('Failed to delete expense');
+
+      setExpenses(expenses.filter((expense) => expense._id !== id));
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+    }
+    await fetchExpenses();
+  };
+  
 
   const sortedExpenses = useMemo(() => {
     let sorted = [...expenses]
@@ -186,8 +243,10 @@ function Dashboard() {
     [expenses],
   )
 
-  console.log(expenses)
-  console.log(totalExpenses)
+  useEffect(() => {
+    fetchBudgets();
+    fetchExpenses();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen background-container">
@@ -299,7 +358,7 @@ function Dashboard() {
                 
               {Object.entries(expensesByCategory).map(([category, { total, count }]) => (
                   <div key={category} className='border border-gray-300 rounded-lg p-2'>
-                    <div className="text-xl font-bold">₹{total.toFixed(2)} / ₹{categoryBudget[category].toFixed(2)}</div>
+                    <div className="text-xl font-bold">₹{total} / ₹{categoryBudget[category]}</div>
                     {console.log(category)}
                     <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                       <div className="bg-blue-600 h-2.5 rounded-full" style={{width:`${total/(categoryBudget[category])*100}%`}}></div>
@@ -369,13 +428,13 @@ function Dashboard() {
             </TableHeader>
             <TableBody>
               {sortedExpenses.map((expense) => (
-                <TableRow key={expense.id}>
+                <TableRow key={expense._id}>
                   <TableCell>{expense.date}</TableCell>
                   <TableCell>{expense.category}</TableCell>
                   <TableCell>{expense.description}</TableCell>
-                  <TableCell className="text-right">₹{expense.amount.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">₹{expense.amount}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteExpense(expense.id)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleDeleteExpense(expense._id)}>
                       <TrashIcon className="w-4 h-4" />
                     </Button>
                   </TableCell>
