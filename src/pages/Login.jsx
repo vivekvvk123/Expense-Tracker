@@ -1,15 +1,3 @@
-// import React from 'react'
-// import Header from './Header'
-// function Login() {
-//   return (
-//     <>
-//         <Header />
-//     </>
-//   )
-// }
-
-// export default Login
-
 import React from "react";
 import { useState } from "react";
 import {
@@ -27,7 +15,6 @@ import { CardFooter } from "@/components/ui/card";
 
 function Login() {
   const [isLogin, setIsLogin] = useState(false);
-  const [role, setRole] = useState("student");
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent page reload
@@ -37,20 +24,19 @@ function Login() {
     // console.log(email, password, role);
     if (!isLogin) {
       try {
-        const response = await fetch("http://localhost:3000/signup", {
+        const response = await fetch("http://localhost:3000/create-account", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            username,
             email,
             password,
-            role,
           }),
         });
         console.log(response.ok);
         if (response.ok) {
-          // navigate(`/${role}`); // Redirect to /student or /teacher based on role
           window.location.href = `/${role}`;
         } else {
           const errorData = await response.json();
@@ -70,7 +56,6 @@ function Login() {
           body: JSON.stringify({
             email,
             password,
-            role,
           }),
         });
         console.log(response.ok);
@@ -103,7 +88,8 @@ function Login() {
           <Tabs>
             <TabsContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
+                {!isLogin && (
+                  <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
                   <Input
                     id="studentId"
@@ -111,6 +97,7 @@ function Login() {
                     required
                   />
                 </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="studentEmail">Email</Label>
                   <Input

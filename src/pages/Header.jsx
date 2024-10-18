@@ -10,7 +10,7 @@ function Header() {
     navigate("/login");
   }
   return (
-      <div className="bg-[#7db0f2] text-primary-foreground py-4 px-6 drop-shadow-md justify-between flex items-center">
+      <div className="bg-[#7db0f2] text-primary-foreground py-3 px-6 drop-shadow-md justify-between flex items-center">
         <h1 className="text-2xl font-bold">Expense Tracker</h1>
         <ProfileInfo onLogout={onLogout} />
       </div>
