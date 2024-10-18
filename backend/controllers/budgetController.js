@@ -1,9 +1,9 @@
 const {budgetsCollection} = require("../models/budgetModel");
 const createBudget = async (req, res) => {
   try {
-    const { name, amount } = req.body;
+    const { name, amount, totalBudget } = req.body;
     console.log(`Creating budget with name: ${name}, amount: ${amount}`);
-    const newBudget = { name, amount: parseFloat(amount) };
+    const newBudget = { name, amount: parseFloat(amount), totalBudget: parseFloat(totalBudget) };
     const result = await budgetsCollection().insertOne(newBudget);
     console.log("Insert result:", result);
     res.status(201).json(newBudget);

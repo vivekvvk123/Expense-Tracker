@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuLabel,DropdownMenuSeparator,DropdownMenuTrigger,DropdownMenuRadioGroup,DropdownMenuRadioItem} from "@/components/ui/dropdown-menu"
 import {Table,TableBody,TableCaption,TableCell,TableHead,TableHeader,TableRow} from "@/components/ui/table"
+import { parse } from 'postcss'
 
 
 function FilterIcon(props) {
@@ -86,9 +87,10 @@ function Dashboard() {
   const [budget, setBudget] = useState({
     name: "",
     amount: "",
+    totalBudget: 0
   })
   const [categoryBudget, setCategoryBudget] = useState({})
-  const [totalbudget, setTotalBudget] = useState(0);
+  const [totalBudget, setTotalBudget] = useState(0);
   const [categories, setCategories] = useState([]);
   const [sortBy, setSortBy] = useState("date")
   const [filterCategory, setFilterCategory] = useState("")
@@ -169,22 +171,25 @@ function Dashboard() {
     }
   };
   
-
+var a;
   const handleAddBudget = async () => {
     if (budget.name && budget.amount) {
       try {
         const response = await fetch('http://localhost:5000/api/budget', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(budget),
+          body: JSON.stringify({name:budget.name, amount:budget.amount, totalBudget: parseFloat(totalBudget)+parseFloat(budget.amount)}),
         });
+        // console.log(totalbudget)
 
         if (!response.ok) throw new Error(`Failed to add budget. Status: ${response.status}`);
 
         const newBudget = await response.json();
-        console.log('New budget added:', newBudget);
+        // console.log('New budget added:', newBudget);
 
-        setBudget({ name: '', amount: '' });
+        setTotalBudget(totalBudget + newBudget.amount);
+        a=(budget.totalBudget);
+        setBudget({ name: '', amount: '' , totalBudget: totalBudget + newBudget.amount});
         setCategories([...categories, newBudget.name]);
         await fetchBudgets();
       } catch (error) {
@@ -195,7 +200,9 @@ function Dashboard() {
     }
   };
   
-
+// console.log(totalBudget);
+// console.log(budget.totalBudget)
+console.log(a)
 
 
 const handleDeleteExpense = async (id) => {
@@ -340,7 +347,8 @@ const handleDeleteExpense = async (id) => {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="text-2xl font-bold">₹{totalbudget.toFixed(2)-totalExpenses}</div>
+                  {/* {console.log(totalBudget)} */}
+                  <div className="text-2xl font-bold">₹{totalBudget.toFixed(2)-totalExpenses}</div>
                   <div className="text-muted-foreground">Total Budget Left</div>
                 </div>
                 <div>
@@ -350,7 +358,7 @@ const handleDeleteExpense = async (id) => {
               </div>
 
               <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-3">
-                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${totalbudget > 0 ? ((totalbudget - totalExpenses) / totalbudget) * 100 : 0}%` }}
+                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${totalBudget > 0 ? ((totalBudget - totalExpenses) / totalBudget) * 100 : 0}%` }}
                   ></div>
               </div>
 
@@ -361,7 +369,6 @@ const handleDeleteExpense = async (id) => {
               {Object.entries(expensesByCategory).map(([category, { total, count }]) => (
                   <div key={category} className='border border-gray-300 rounded-lg p-2'>
                     <div className="text-xl font-bold">₹{total} / ₹{categoryBudget[category]}</div>
-                    {console.log(category)}
                     <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                       <div className="bg-blue-600 h-2.5 rounded-full" style={{width:`${total/(categoryBudget[category])*100}%`}}></div>
                     </div>
@@ -431,7 +438,6 @@ const handleDeleteExpense = async (id) => {
             <TableBody>
               {sortedExpenses.map((expense) => (
                 <TableRow key={expense.id}>
-                  {/* {console.log(expense)} */}
                   <TableCell>{expense.date}</TableCell>
                   <TableCell>{expense.category}</TableCell>
                   <TableCell>{expense.description}</TableCell>

@@ -1,12 +1,20 @@
 import React from "react";
+import ProfileInfo from "./ProfileInfo";
+import { useNavigate } from "react-router-dom";
 
 function Header() {
+
+  const navigate= useNavigate();
+
+  const onLogout= ()=>{
+    navigate("/login");
+  }
   return (
-    <div>
-      <header className="bg-primary text-primary-foreground py-4 px-6">
+      <div className="bg-[#7db0f2] text-primary-foreground py-4 px-6 drop-shadow-md justify-between flex items-center">
         <h1 className="text-2xl font-bold">Expense Tracker</h1>
-      </header>
-    </div>
+        <ProfileInfo onLogout={onLogout} />
+      </div>
+
   );
 }
 
